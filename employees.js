@@ -1,16 +1,24 @@
+
+const  http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const app = express();
 const mysql = require('mysql');
+
    
+
+
+
 /*------------------------------------------
 --------------------------------------------
 parse application/json
 --------------------------------------------
 --------------------------------------------*/
+var server = http.createServer(app);
 app.use(bodyParser.json());
-   
+app.use(express.json()); 
+app.use(bodyParser.urlencoded({extended: true}));  
 /*------------------------------------------
 --------------------------------------------
 Database Connection
@@ -19,7 +27,7 @@ Database Connection
 const conn = mysql.createConnection({
   host: 'localhost',
   user: 'root', /* MySQL User */
-  password: '', /* MySQL Password */
+  password: '', /* MySQL Password */       
   database: 'node_restapi' /* MySQL Database */
 });
    
@@ -32,6 +40,8 @@ conn.connect((err) =>{
   if(err) throw err;
   console.log('Mysql Connected with App...');
 });
+
+
    
 /**
  * Get All Items
@@ -54,12 +64,16 @@ app.get('/api/items',(req, res) => {
  * @return response()
  */
 app.get('/view',(req, res) => {
-  let sqlQuery = "SELECT * FROM items WHERE id =?" + req.params.id;
+
+  let data = {id: req.body.id};
+  var ids = '1';
+  let sqlQuery = 'SELECT id ID, title Title FROM items WHERE id =?';
+  
     
-  let query = conn.query(sqlQuery, (err, results) => {
+  let query = conn.query(sqlQuery,data,(err, results) => {
     if(err) throw err;
     res.send(results);
-    console.log(results);
+    
   });
 });
    
@@ -69,9 +83,11 @@ app.get('/view',(req, res) => {
  * @return /Insert/add
  */
 app.post('/add',(req, res) => {
-  let data = {title: req.body.title, body: req.body.body};
+
+ // console.log(req.body.id);
+  let data = {title: req.body.name, id: req.body.id};
   
-  let sqlQuery = "INSERT INTO emp(id,name) VALUES(?,?)";
+  let sqlQuery = "INSERT INTO items(title,id) VALUES(?)";
   
   let query = conn.query(sqlQuery, data,(err, results) => {
     if(err) throw err;
@@ -80,15 +96,18 @@ app.post('/add',(req, res) => {
     console("entry displayed successfully");
   });
 });
+
+
+
    
 /**
  * Update Item
  *
  * @return response()
  */
-app.put('/update',(req, res) => {
-    let data = {name: req.body.name, id: req.body.id};
-  let sqlQuery = 'UPDATE emp SET name = ? WHERE id = ?';
+app.put('/update/:id',(req, res) => {
+    let data = {name: req.body.title, id: req.params.id};
+  let sqlQuery = 'UPDATE items SET title = ? WHERE id = ?';
   
   let query = conn.query(sqlQuery,data, (err, results) => {
     if(err) throw err;
@@ -101,11 +120,13 @@ app.put('/update',(req, res) => {
  *
  * @return response()
  */
-app.delete('/api/items/:id',(req, res) => {
-  let sqlQuery = "DELETE FROM items WHERE id="+req.params.id+"";
+app.delete('/delete',(req, res) => {
+  
+  let sqlQuery = "DELETE FROM items WHERE id=?"+req.body.id+"";
     
   let query = conn.query(sqlQuery, (err, results) => {
     if(err) throw err;
+    console.log(req.body.id);
       res.send(apiResponse(results));
   });
 });
@@ -131,4 +152,9 @@ app.listen(3000,() =>{
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '/employee.html'));
   });
+
+  app.use(express.static(__dirname + '/public'));
+
+
+  
 
