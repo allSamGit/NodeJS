@@ -5,6 +5,12 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const app = express();
 const mysql = require('mysql');
+var nStatic = require('node-static');
+var url = require('url');
+var fs = require('fs');
+
+var fileServer = new nStatic.Server('./public');
+
 
    
 
@@ -42,6 +48,7 @@ conn.connect((err) =>{
 });
 
 
+
    
 /**
  * Get All Items
@@ -58,15 +65,17 @@ app.get('/api/items',(req, res) => {
   });
 });
    
+
 /**
- * Get Single Item
+ * Get Single Item (View)
  *
  * @return response()
  */
-app.get('/view',(req, res) => {
+app.post('/view',(req, res) => {
 
-  let data = {id: req.body.id};
-  var ids = '1';
+  let data = [req.body.id];
+  
+  
   let sqlQuery = 'SELECT id ID, title Title FROM items WHERE id =?';
   
     
@@ -80,33 +89,31 @@ app.get('/view',(req, res) => {
 /**
  * Create New Item
  *
- * @return /Insert/add
+ * @return response()
  */
 app.post('/add',(req, res) => {
 
  // console.log(req.body.id);
-  let data = {title: req.body.name, id: req.body.id};
+  let data = [req.body.title,req.body.body];
   
-  let sqlQuery = "INSERT INTO items(title,id) VALUES(?)";
+  let sqlQuery = 'INSERT INTO items(title,body) VALUES(?,?)';
   
   let query = conn.query(sqlQuery, data,(err, results) => {
     if(err) throw err;
     res.send(apiResponse(results));
-    res.send(` ID: ${row.ID},    Name: ${row.NAME}`);
-    console("entry displayed successfully");
+    //res.send(` ID: ${row.ID},    Name: ${row.NAME}`);
+    //console("entry displayed successfully");
   });
 });
 
-
-
-   
+ 
 /**
  * Update Item
  *
  * @return response()
  */
-app.put('/update/:id',(req, res) => {
-    let data = {name: req.body.title, id: req.params.id};
+app.post('/update',(req, res) => {
+    let data = [req.body.title,req.body.id];
   let sqlQuery = 'UPDATE items SET title = ? WHERE id = ?';
   
   let query = conn.query(sqlQuery,data, (err, results) => {
@@ -120,16 +127,53 @@ app.put('/update/:id',(req, res) => {
  *
  * @return response()
  */
-app.delete('/delete',(req, res) => {
+app.post('/delete',(req, res) => {
   
-  let sqlQuery = "DELETE FROM items WHERE id=?"+req.body.id+"";
+  let data = [req.body.id];
+  let sqlQuery = "DELETE FROM items WHERE id=?";
     
-  let query = conn.query(sqlQuery, (err, results) => {
+  let query = conn.query(sqlQuery,data, (err, results) => {
     if(err) throw err;
     console.log(req.body.id);
       res.send(apiResponse(results));
   });
 });
+
+/**
+ * Sort Items
+ *
+ * @return response()
+ */
+
+app.get('/sort',(req, res) => {
+  
+  let data = [req.body.column];
+  let sqlQuery = "SELECT * FROM items ORDER BY ? DESC";
+    
+  let query = conn.query(sqlQuery,data, (err, results) => {
+    if(err) throw err;
+    console.log(req.body.id);
+      res.send(apiResponse(results));
+  });
+});
+
+/**
+ * close connection
+ *
+ * @return response()
+ */
+
+app.get('/close',(req, res) => {
+  conn.end(function(err) {
+    if (err) {
+    return console.log('error:' + err.message);
+    }
+    console.log('Close the database connection.');
+    });
+});
+
+
+
   
 /**
  * API Response
@@ -145,7 +189,7 @@ function apiResponse(results){
 Server listening
 --------------------------------------------
 --------------------------------------------*/
-app.listen(3000,() =>{
+var server=app.listen(3000,() =>{
   console.log('Server started on port 3000...');
 });
 
@@ -153,8 +197,25 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '/employee.html'));
   });
 
-  app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/'));
 
 
-  
+/*
+server.close(()=>{
 
+  http.createServer(function (req, res) {
+    var q = url.parse(req.url, true);
+    var filename = "." + q.pathname;
+    fs.readFile(filename, function(err, data) {
+      if (err) {
+        res.writeHead(404, {'Content-Type': 'text/html'});
+        return res.end("404 Not Found");
+      } 
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.write(data);
+      return res.end();
+    });
+  }).listen(3000);
+
+});
+*/

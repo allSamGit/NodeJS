@@ -10,17 +10,20 @@
 </head>
 
 <body>
+
   <header>
     <h1>Employee Database</h1>
   </header>
+
+
   <form action="/add" method="POST">
     <fieldset>
       <h3>Add new employee</h3>
-      <label>Employee ID</label>
-      <input type ="text" id = 'empID' name="id" required>
+      <label>Title</label>
+      <input type ="text" id = 'empID' name="title" required>
       <br><br>
-      <label>Name</label>
-      <input type="text" id = "name" name="name" required>
+      <label>Body Name</label>
+      <input type="text" id = "name" name="body" required>
       <br><br>
       <button type ="reset">Reset</button>
       <button type ="submit">Submit</button>
@@ -31,7 +34,7 @@
   <fieldset>
     <h3>View an employee</h3>
     <label>Employee ID</label>
-    <input type="text" id="empID" name="id" required>
+    <input type="text" id="empIDView" name="id" required>
     <br><br>
     <button type ="reset">Reset</button>
     <button type ="submit">Submit</button>
@@ -45,8 +48,8 @@
       <label>Employee ID</label>
       <input type ="text" id = 'empID' name="id" required>
       <br><br>
-      <label>New Name</label>
-      <input type="text" id = "name" name="name" required>
+      <label>New Title</label>
+      <input type="text" id = "name" name="title" required>
       <br><br>
       <button type ="reset">Reset</button>
       <button type ="submit">Submit</button>
@@ -65,6 +68,22 @@
       <br><br><br>
     </fieldset>
    </form>
+
+
+   <form action="/sort" method="GET">
+    <fieldset>
+      <h3>Sort employees</h3>
+      <label>Column name</label>
+      <input type ="text" id = 'empID' name="column" required>
+      <br><br>
+      <button type ="reset">Reset</button>
+      <button type ="submit">Submit</button>
+      <br><br><br>
+    </fieldset>
+   </form>
+
+
+
 
    <footer>
     <hr>
